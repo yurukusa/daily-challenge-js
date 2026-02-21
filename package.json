@@ -4,8 +4,13 @@
   "description": "Serverless daily challenges for web games — seed + clipboard + streak tracking, no backend",
   "main": "daily-challenge.js",
   "scripts": {
-    "demo": "npx serve demo"
+    "demo": "npx --yes serve@14 demo"
   },
+  "files": [
+    "daily-challenge.js",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [
     "game",
     "daily-challenge",

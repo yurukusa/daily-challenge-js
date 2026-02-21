@@ -224,6 +224,9 @@ function onGameOver(stats) {
 
 ### Godot 4 (GDScript + JavaScriptBridge)
 
+> **Security note**: Never concatenate user-controlled input into `JavaScriptBridge.eval()` strings.
+> The examples below use only fixed string literals — keep it that way.
+
 ```gdscript
 # Get today's seed
 var seed_val: int = JavaScriptBridge.eval("""
