@@ -206,7 +206,10 @@
     var btn = document.createElement('button');
     btn.textContent = label || '💬 Post to comments';
     btn.addEventListener('click', function () {
-      window.open(url, '_blank');
+      // noopener,noreferrer: prevent tabnapping (opened page cannot access window.opener)
+      // URL scheme guard: only http/https allowed to prevent javascript: / data: injection
+      if (!/^https?:\/\//i.test(url)) return;
+      window.open(url, '_blank', 'noopener,noreferrer');
     });
     return btn;
   }
