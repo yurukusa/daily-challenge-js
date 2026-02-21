@@ -1,0 +1,25 @@
+{
+  "name": "daily-challenge.js",
+  "version": "1.0.0",
+  "description": "Serverless daily challenges for web games — seed + clipboard + streak tracking, no backend",
+  "main": "daily-challenge.js",
+  "scripts": {
+    "demo": "npx serve demo"
+  },
+  "keywords": [
+    "game",
+    "daily-challenge",
+    "leaderboard",
+    "indie-game",
+    "seed",
+    "streak",
+    "localStorage",
+    "serverless"
+  ],
+  "author": "yurukusa",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yurukusa/daily-challenge-js"
+  }
+}

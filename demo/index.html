@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>daily-challenge.js — Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0a0a12;
+      color: #e0e0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.8rem; color: #7ab8ff; margin-bottom: 8px; }
+    .subtitle { color: #888; font-size: 0.95rem; margin-bottom: 40px; }
+    .card {
+      background: #12121e;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 28px 32px;
+      max-width: 560px;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+    .card h2 { font-size: 1.1rem; color: #a0c0ff; margin-bottom: 16px; letter-spacing: 0.05em; }
+    .info { font-size: 0.95rem; line-height: 1.7; color: #ccc; }
+    .info strong { color: #fff; }
+    .seed { font-family: monospace; font-size: 1.3rem; color: #7dff8e; letter-spacing: 0.08em; }
+    .streak-msg { font-size: 1.05rem; margin: 12px 0; min-height: 1.5em; color: #ffaa33; }
+    .buttons { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    button {
+      padding: 10px 20px;
+      border: 1px solid #3a5a9a;
+      border-radius: 4px;
+      background: #0e1a2e;
+      color: #9cf;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button:hover { background: #162840; }
+    button.primary { border-color: #4a8a5a; background: #0d1e14; color: #7dff8e; }
+    button.primary:hover { background: #152a1e; }
+    .score-box {
+      font-family: monospace;
+      font-size: 0.88rem;
+      background: #080810;
+      border: 1px solid #2a2a3a;
+      border-radius: 4px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      white-space: pre-wrap;
+      color: #aaa;
+      line-height: 1.5;
+    }
+    .label { font-size: 0.78rem; color: #666; margin-top: 6px; }
+    a { color: #7ab8ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .divider { border: none; border-top: 1px solid #1e1e30; margin: 8px 0 16px; }
+  </style>
+</head>
+<body>
+  <h1>daily-challenge.js</h1>
+  <p class="subtitle">Serverless daily challenges for web games — seed + clipboard + streak</p>
+
+  <div class="card">
+    <h2>Today's Seed</h2>
+    <hr class="divider">
+    <p class="info">
+      Every player who loads this page today gets the same seed.<br>
+      Same seed → same enemy layout → directly comparable scores.
+    </p>
+    <p style="margin-top:14px">
+      Seed: <span class="seed" id="seed-today">—</span>
+      <span class="label" id="seed-date"></span>
+    </p>
+    <p style="margin-top:8px">
+      Yesterday: <span class="seed" style="opacity:0.5" id="seed-yesterday">—</span>
+      <span class="label" id="seed-ydate"></span>
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Streak</h2>
+    <hr class="divider">
+    <div class="streak-msg" id="streak-msg">loading…</div>
+    <p class="info" id="streak-raw" style="font-size:0.82rem; color:#555"></p>
+    <div class="buttons">
+      <button class="primary" onclick="simulateComplete()">✓ Simulate daily complete</button>
+      <button onclick="resetStreak()">↺ Reset streak</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Score Sharing</h2>
+    <hr class="divider">
+    <div class="score-box" id="score-preview">—</div>
+    <div class="buttons">
+      <span id="copy-btn-container"></span>
+      <button onclick="openComments()">💬 Post to comments</button>
+    </div>
+    <p class="label" style="margin-top:12px">
+      The "💬 Post to comments" button links to your game's comment section (itch.io, etc.)
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Usage</h2>
+    <hr class="divider">
+    <pre style="font-size:0.82rem; line-height:1.6; color:#aaa; overflow-x:auto">&lt;script src="daily-challenge.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+// Get today's seed — same for everyone
+var seed = DailyChallenge.getSeed();
+myGame.rng.seed(seed);
+
+// On game over: record streak, build score text, copy
+var result = DailyChallenge.recordCompletion('mygame');
+var text = DailyChallenge.buildScoreText({
+  gameName: 'My Game',
+  dateStr: '02/21',
+  emoji: '⚔️',
+  buildName: 'Fire Mage',
+  stars: '★★☆',
+  time: '5:23',
+  streak: result.streak,
+  url: 'https://mygame.itch.io'
+});
+DailyChallenge.copyScore(text);
+&lt;/script&gt;</pre>
+  </div>
+
+  <script src="../daily-challenge.js"></script>
+  <script>
+    var GAME_PREFIX = 'demo';
+    var COMMENTS_URL = 'https://yurukusa.itch.io/spell-cascade#comments';
+
+    function updateUI() {
+      var seeds = DailyChallenge.getSeeds();
+      document.getElementById('seed-today').textContent = seeds.today;
+      document.getElementById('seed-date').textContent = '(' + seeds.todayStr + ')';
+      document.getElementById('seed-yesterday').textContent = seeds.yesterday;
+      document.getElementById('seed-ydate').textContent = '(' + seeds.yesterdayStr + ')';
+
+      var info = DailyChallenge.getStreak(GAME_PREFIX);
+      var msg = DailyChallenge.getStreakMessage(info.streak, info.playedToday);
+      document.getElementById('streak-msg').textContent = msg || '(no streak yet — click "Simulate daily complete")';
+      document.getElementById('streak-raw').textContent =
+        'streak=' + info.streak + '  last=' + (info.last || 'never');
+
+      var scoreText = DailyChallenge.buildScoreText({
+        gameName: 'My Game',
+        dateStr: seeds.todayStr.slice(5).replace('-', '/'),
+        emoji: '⚔️',
+        buildName: 'Fire Mage',
+        stars: '★★☆',
+        time: '5:23',
+        streak: info.streak,
+        url: 'https://mygame.itch.io'
+      });
+      document.getElementById('score-preview').textContent = scoreText;
+
+      var container = document.getElementById('copy-btn-container');
+      container.innerHTML = '';
+      var btn = DailyChallenge.createCopyButton(scoreText);
+      container.appendChild(btn);
+    }
+
+    function simulateComplete() {
+      DailyChallenge.recordCompletion(GAME_PREFIX);
+      updateUI();
+    }
+
+    function resetStreak() {
+      try {
+        localStorage.removeItem(GAME_PREFIX + '_daily_last');
+        localStorage.removeItem(GAME_PREFIX + '_daily_streak');
+      } catch(e) {}
+      updateUI();
+    }
+
+    function openComments() {
+      window.open(COMMENTS_URL, '_blank');
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
